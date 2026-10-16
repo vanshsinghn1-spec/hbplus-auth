@@ -22,8 +22,9 @@ The user interface adheres to a clean, enterprise-grade design system featuring 
 - [Design and Architecture](#design-and-architecture)
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
-- [Installation and Local Setup](#installation-and-local-setup)
-- [Authentication and Domain Restriction Flow](#authentication-and-domain-restriction-flow)
+- [Setup Instructions](#setup-instructions)
+- [Authentication Flow](#authentication-flow)
+- [How Domain Restriction Works](#how-domain-restriction-works)
 - [Assignment Evaluation and Testing Modes](#assignment-evaluation-and-testing-modes)
 - [Role-Based Access Control](#role-based-access-control)
 - [Code Quality and Verification](#code-quality-and-verification)
@@ -115,46 +116,72 @@ hb_ass/
 
 ---
 
-## Installation and Local Setup
+## Setup Instructions
 
-### Prerequisites
-- Node.js (v18.0.0 or higher recommended)
-- npm or yarn
-- Git
+Follow these instructions to configure and run the application across Web and Mobile environments.
 
-### 1. Clone the Repository
+### 1. Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **npm** (bundled with Node.js) or **yarn**
+- **Git**
+- **Expo Go App** (optional, for running on physical Android or iOS devices)
+- **Android Studio** or **Xcode** (optional, for emulator/simulator testing)
+
+### 2. Clone the Repository
 ```bash
 git clone https://github.com/vanshsinghn1-spec/hbplus-auth.git
 cd hbplus-auth
 ```
 
-### 2. Install Dependencies
+### 3. Install Dependencies
+Install all SDK-compatible dependencies:
 ```bash
 npm install
 ```
 
-### 3. Start Development Server
-
-To run on Web:
+### 4. Running on Web
+Start the Expo Metro bundler targeting the web browser:
 ```bash
 npx expo start --web
 ```
-Or specify a custom port:
+The application compiles and opens automatically at `http://localhost:8081` (or next available port).
+
+### 5. Running on Mobile (Android and iOS)
+
+#### A. Physical Devices via Expo Go (Fastest)
+1. Install **Expo Go** from Google Play Store (Android) or Apple App Store (iOS).
+2. Connect your mobile device to the same Wi-Fi network as your development computer.
+3. Start the bundler:
+   ```bash
+   npx expo start
+   ```
+4. **Android**: Open the Expo Go app and tap "Scan QR Code".
+5. **iOS**: Open the native Camera app and tap the notification banner to open in Expo Go.
+
+*Tip: If running on separate networks or behind a firewall, run with tunnel mode:*
 ```bash
-npx expo start --web --port 8081
+npx expo start --tunnel
 ```
 
-To run on Mobile (requires Android Studio emulator or Xcode simulator):
-```bash
-npx expo run:android   # Android
-npx expo run:ios       # iOS
-```
-
-Alternatively, run `npx expo start` and scan the terminal QR code with the Expo Go mobile application.
+#### B. Emulators and Simulators
+- **Android Emulator**: Start an Android Virtual Device (AVD) from Android Studio, then run:
+  ```bash
+  npx expo run:android
+  ```
+  *(Or run `npx expo start` and press `a` in your terminal)*.
+- **iOS Simulator** (macOS required):
+  ```bash
+  npx expo run:ios
+  ```
+  *(Or run `npx expo start` and press `i` in your terminal)*.
 
 ---
 
-## Authentication and Domain Restriction Flow
+## Authentication Flow
+
+The authentication architecture ensures that only authenticated users possessing an official domain email can obtain an active session and access protected application views.
+
+### Architectural Flow Diagram
 
 ```
 ┌───────────────────┐       ┌──────────────────────┐       ┌────────────────────────┐
@@ -172,20 +199,60 @@ Alternatively, run `npx expo start` and scan the terminal QR code with the Expo 
                                          │ Protected Dashboard │               │ Error Alert Display │
                                          │ Access Authorized   │               │ "Access restricted. │
                                          │ Session Persisted   │               │ Use @hbplus.fit"    │
+                                         │ Supabase Sync       │               │ Security Audit Log  │
                                          └─────────────────────┘               └─────────────────────┘
 ```
 
-The domain validation check is executed in `src/context/AuthContext.js`:
+### Authentication Lifecycle Stages
+
+1. **Initiation**: The user clicks **Continue with Google** (or an evaluator shortcut) on [LoginScreen.js](file:///c:/Users/admin/Desktop/hb_ass/src/screens/LoginScreen.js).
+2. **OAuth 2.0 Exchange**: Handled via `expo-auth-session/providers/google`. The client initiates an OAuth 2.0 authorization code/token flow with Google identity servers.
+3. **Profile Retrieval**: Upon receiving the access token, the client makes an authorized request to Google's UserInfo API (`https://www.googleapis.com/userinfo/v2/me`) using the bearer token to retrieve the authenticated email, name, and profile avatar.
+4. **Domain Interception**: The retrieved email is evaluated against the domain validation engine before any session tokens or state flags are persisted.
+5. **Session Authorization & Storage**:
+   - If authorized, user session data is saved to `AsyncStorage` under `@hbplus_user_data`.
+   - The user profile is synchronized to the Supabase `profiles` table.
+   - An audit event (`SUCCESS_LOGIN`) is logged in Supabase.
+   - Global `isAuthenticated` state transitions to `true`, causing the root router to mount the protected [DashboardScreen.js](file:///c:/Users/admin/Desktop/hb_ass/src/screens/DashboardScreen.js).
+6. **Session Hydration**: On app reload, `AuthContext` hydrates the session from `AsyncStorage`, maintaining the login state without prompting for re-authentication.
+7. **Sign Out**: `signOut()` wipes `@hbplus_user_data` and `@hbplus_auth_token` from `AsyncStorage`, terminates active Supabase sessions, and unmounts the protected dashboard.
+
+---
+
+## How Domain Restriction Works
+
+Domain restriction is enforced as a strict gatekeeper at the client-side state and navigation layer, preventing unauthorized access attempts from reaching protected application code.
+
+### 1. Domain Configuration
+The permitted organizational domain is defined in [src/config/constants.js](file:///c:/Users/admin/Desktop/hb_ass/src/config/constants.js):
+
+```javascript
+export const AUTH_CONFIG = {
+  ALLOWED_DOMAIN: 'hbplus.fit',
+  DOMAIN_ERROR: 'Access restricted. Please login using your official domain email (@hbplus.fit).',
+};
+```
+
+### 2. Validation Implementation
+The validation function is defined in [src/context/AuthContext.js](file:///c:/Users/admin/Desktop/hb_ass/src/context/AuthContext.js):
 
 ```javascript
 const validateDomain = (email) => {
   if (!email) return false;
   const domain = email.split('@')[1]?.toLowerCase();
-  return domain === AUTH_CONFIG.ALLOWED_DOMAIN.toLowerCase(); // 'hbplus.fit'
+  return domain === AUTH_CONFIG.ALLOWED_DOMAIN.toLowerCase();
 };
 ```
 
-If the domain matches, the user object is stored in AsyncStorage and global state transitions to authenticated. If the domain does not match, state updates to show the restriction message and no protected routes are unlocked.
+### 3. Verification Rules
+- **Hostname Extraction**: The email address is split at the `@` delimiter to isolate the exact hostname portion. This eliminates substring vulnerabilities (e.g., `user@fakehbplus.fit` or `user@hbplus.fit.malicious.com` are strictly rejected).
+- **Case-Insensitive Normalization**: Both the input domain and the configured domain are normalized via `.toLowerCase()`. For example, `ALEX@HBPLUS.FIT` is permitted, aligning with RFC 5321 email standards.
+- **Fail-Closed Gatekeeping**: If the email is missing, malformed, or belongs to any domain other than `hbplus.fit`:
+  - `validateDomain(email)` returns `false`.
+  - No auth tokens or user records are saved to `AsyncStorage`.
+  - An audit log event (`RESTRICTED_DOMAIN_ATTEMPT`) is dispatched to Supabase.
+  - The UI state sets `error` to the domain restriction notice, rendering the slide-down [ErrorBanner.js](file:///c:/Users/admin/Desktop/hb_ass/src/components/ErrorBanner.js).
+- **Route Guard Protection**: In [App.js](file:///c:/Users/admin/Desktop/hb_ass/App.js), the router strictly renders screens based on `isAuthenticated`. Because `isAuthenticated` is derived exclusively from a verified session, protected dashboard components cannot be rendered without passing domain validation.
 
 ---
 
