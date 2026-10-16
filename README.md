@@ -1,180 +1,167 @@
-# Hb+ — Cross-Platform Google OAuth Application
+# Hb+ Cross-Platform Authentication System
 
-A secure cross-platform application built with **React Native** (Expo SDK 57) supporting **Mobile** (Android/iOS) and **Web** platforms. Implements Google OAuth 2.0 authentication with domain-restricted access — only `@hbplus.fit` email addresses are authorized.
+A secure cross-platform application developed with React Native (Expo SDK 57) supporting Mobile (Android and iOS) and Web platforms. The application implements Google OAuth 2.0 authentication with strict email domain restriction, authorizing only `@hbplus.fit` domain addresses.
 
-Featuring the modern **Hb+** design system adapted from the enterprise reference design — with clean typography, responsive sidebar navigation, activity tracking, metric cards, and instant evaluator test modes.
-
-![React Native](https://img.shields.io/badge/React_Native-0.86-blue?logo=react)
-![Expo](https://img.shields.io/badge/Expo-SDK_57-black?logo=expo)
-![OAuth](https://img.shields.io/badge/Google_OAuth-2.0-red?logo=google)
-![Platform](https://img.shields.io/badge/Platform-Web_|_Android_|_iOS-green)
-![Tests](https://img.shields.io/badge/Expo_Doctor-21%2F21_Passed-brightgreen)
-![TypeScript](https://img.shields.io/badge/TypeScript-Strict_Check_Passed-blue)
+The user interface adheres to a clean, enterprise-grade design system featuring responsive sidebar navigation, workspace activity metrics, and dedicated testing modes for evaluator review.
 
 ---
 
-## 🚀 Live Demo
-
-- **Local Web Server:** `http://localhost:8081`
-- **Deployment Build:** `npx expo export --platform web` (outputs to `dist/`)
-
----
-
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features](#features)
-- [Design Adaptation (Hb+ UI)](#design-adaptation-hb-ui)
-- [Tech Stack](#tech-stack)
+- [Design and Architecture](#design-and-architecture)
+- [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
-- [Setup & Running](#setup--running)
-- [Authentication Flow & Domain Restriction](#authentication-flow--domain-restriction)
-- [Testing the Assignment](#testing-the-assignment)
+- [Installation and Local Setup](#installation-and-local-setup)
+- [Authentication and Domain Restriction Flow](#authentication-and-domain-restriction-flow)
+- [Assignment Evaluation and Testing Modes](#assignment-evaluation-and-testing-modes)
 - [Role-Based Access Control](#role-based-access-control)
-- [Verification & Quality](#verification--quality)
-- [Deployment](#deployment)
+- [Code Quality and Verification](#code-quality-and-verification)
+- [Deployment Guide for Netlify](#deployment-guide-for-netlify)
 
 ---
 
-## ✨ Features
+## Features
 
-- ✅ **Google Sign-In** — One-click authentication via Google OAuth 2.0 (`expo-auth-session`).
-- ✅ **Domain Validation** — Strict domain verification restricting access exclusively to `@hbplus.fit`.
-- ✅ **Domain Restriction Error** — Immediate, clear error feedback for unauthorized domains (e.g., `@gmail.com`).
-- ✅ **Protected Dashboard** — Protected routing ensures only verified users can access workspace data.
-- ✅ **Hb+ Enterprise UI** — Clean, modern SaaS aesthetic with light theme, responsive sidebar navigation, and metric cards.
-- ✅ **Interactive Domain Testing Mode** — Built-in evaluator shortcuts to test allowed vs. restricted domains in one click without external Google Cloud setup.
-- ✅ **Session Persistence** — Secure user session and token storage via AsyncStorage.
-- ✅ **Role-Based Access Control (RBAC)** — Differentiates between Administrators and Members with special Admin Console capabilities.
-- ✅ **Cross-Platform Compatibility** — 100% unified codebase running smoothly across Web, Android, and iOS.
-
----
-
-## 🎨 Design Adaptation (Hb+ UI)
-
-The UI was adapted from the reference design (`react-native-assignment-ui.zip`) into native React Native components:
-
-### 1. Login Screen
-- **Brand Mark:** **H+** (**Hb+**) brand header with Help Center shortcut.
-- **Hero Presentation:** Clean typography with *"Your work, kept in the right hands."* and private workspace notice.
-- **Google Sign-In Button:** Custom Google-branded action with verification feedback.
-- **Domain Restriction Warning:** Slide-down alert displaying error banner for non-`@hbplus.fit` accounts.
-- **Desktop Preview Card:** Live workspace summary card showing active projects and recent activity.
-- **Evaluator Shortcuts:** One-click shortcuts for testing `guest@gmail.com` (restricted) and `alex@hbplus.fit` (allowed).
-
-### 2. Dashboard Screen
-- **Responsive Navigation:** Fixed sidebar on desktop/tablet (≥768px) and smooth drawer menu on mobile devices.
-- **Header:** Live localized date, personalized greeting (*"Good morning, Alex"*), and profile avatar with role badge.
-- **Workspace Metrics:** 4 primary SaaS metric cards:
-  - *Active projects:* 24 (+12.5%)
-  - *Team members:* 18 (+2)
-  - *Completed tasks:* 156 (+8.2%)
-  - *Hours saved:* 42h (+16.4%)
-- **Two-Column Project & Activity Grid:**
-  - *Project progress:* Interactive progress bars for Project Atlas, Q3 Growth Plan, and Mobile experience.
-  - *Official Domain Verification Banner:* Highlights verified `@hbplus.fit` authenticated session.
-  - *Team activity:* Recent workspace event stream with initials avatars and timestamps.
-- **Admin Console:** Dedicated administrative panel visible when logged in with an administrator account (`admin@hbplus.fit`).
+- **Google OAuth 2.0 Integration**: Authentication handled via Expo AuthSession.
+- **Domain Restriction**: Enforces access exclusively for emails ending in `@hbplus.fit`.
+- **Restricted Domain Handling**: Non-allowed domains (e.g., `@gmail.com`) trigger an informative error alert with access denied.
+- **Protected Routing**: Dashboard routes cannot be accessed without an active, verified session.
+- **Session Persistence**: Authentication state and token metadata are securely retained across page reloads via AsyncStorage.
+- **Role-Based Access Control (RBAC)**: Distinguishes between Administrator and Member roles, conditionally exposing administrative management tools.
+- **Evaluator Shortcuts**: One-click test triggers allow instant review of allowed and restricted domain states without external credential dependencies.
+- **Cross-Platform Compatibility**: A single codebase compiles cleanly to Web (Metro bundler) as well as native iOS and Android environments.
 
 ---
 
-## 🛠 Tech Stack
+## Design and Architecture
 
-| Technology | Purpose |
-|---|---|
-| **React Native** (v0.86) | Core mobile and cross-platform UI primitives |
-| **React Native for Web** | Seamless compilation to modern web browsers |
-| **Expo SDK 57** | Application framework and build tooling |
-| **Expo AuthSession** | Google OAuth 2.0 provider integration |
-| **AsyncStorage** | Token and authenticated session persistence |
-| **React Context API** | Global authentication state and RBAC management |
+The user interface is modeled after modern enterprise productivity applications:
+
+### Login Interface
+- **Brand Identification**: Official `H+` / `Hb+` lettermark.
+- **Security Messaging**: Clear notice indicating private workspace access restrictions.
+- **Authentication Card**: Google-branded sign-in trigger with animated loading state.
+- **Alert Banner**: High-visibility error dialog indicating restricted domain access attempts.
+- **Desktop Overview Card**: Preview widget showing active projects, completion rates, and platform availability.
+- **Evaluator Quick Links**: Direct triggers for immediate simulation of allowed (`alex@hbplus.fit`) and rejected (`guest@gmail.com`) credentials.
+
+### Dashboard Interface
+- **Responsive Layout**: Desktop and tablet views feature a persistent sidebar navigation panel; mobile view provides an accessible slide-out drawer menu.
+- **Header**: Displays current date, personalized user greeting, avatar, and role tag.
+- **Metrics Grid**: Four core business metrics (Active Projects, Team Members, Completed Tasks, Hours Saved).
+- **Project Progress**: Visual progress bars representing active organizational workstreams.
+- **Domain Verification Badge**: Explicit visual indicator affirming the authenticated session under `@hbplus.fit`.
+- **Team Activity Feed**: Real-time event log tracking team member updates.
+- **Admin Console**: Elevated administrative controls rendered only for privileged accounts (`admin@hbplus.fit`).
 
 ---
 
-## 📁 Project Structure
+## Technology Stack
+
+| Component | Technology | Version | Purpose |
+|---|---|---|---|
+| Framework | React Native | 0.86.3 | Core UI and cross-platform components |
+| Web Platform | React Native for Web | 0.21.2 | Web browser compilation and rendering |
+| Development Tooling | Expo SDK | 57.0.29 | Build tools, runtime environment, and CLI |
+| Authentication | Expo AuthSession | 57.0.16 | OAuth 2.0 provider integration and browser flows |
+| Session Storage | AsyncStorage | 2.2.0 | Encrypted persistent client-side state storage |
+| State Management | React Context API | React 19 | Global authentication state and session handlers |
+| Type Safety | TypeScript | 6.0.3 | Strict type definitions and compile checks |
+| Code Quality | ESLint (Flat Config) | 9.0.0 | Code quality, hook verification, and linting |
+
+---
+
+## Project Structure
 
 ```
 hb_ass/
-├── App.js                          # Root navigator with protected auth routing
-├── app.json                        # Expo configuration
-├── package.json                    # Dependencies and scripts
-├── tsconfig.json                   # TypeScript configuration (strict checks)
-├── eslint.config.js                # ESLint configuration
-├── public/                         # Public web assets and Netlify redirects
-│   └── _redirects                  # SPA redirect configuration
+├── App.js                          # Root navigator implementing protected routing
+├── app.json                        # Expo application manifest and configuration
+├── package.json                    # Project dependencies and operational scripts
+├── tsconfig.json                   # Strict TypeScript compiler configuration
+├── eslint.config.js                # Flat ESLint configuration file
+├── public/
+│   └── _redirects                  # Netlify single-page application redirect rules
 └── src/
     ├── config/
-    │   └── constants.js            # OAuth IDs, allowed domain (@hbplus.fit), admin emails
+    │   └── constants.js            # OAuth client IDs, allowed domain, and role lists
     ├── context/
-    │   └── AuthContext.js          # Google OAuth, domain verification, session storage
+    │   └── AuthContext.js          # Authentication provider, session lifecycle, and domain validator
     ├── screens/
-    │   ├── LoginScreen.js          # Hb+ login screen with Google OAuth & testing links
-    │   └── DashboardScreen.js      # Protected Hb+ SaaS dashboard & admin console
+    │   ├── LoginScreen.js          # Login interface with Google OAuth and evaluator triggers
+    │   └── DashboardScreen.js      # Protected application dashboard and admin module
     ├── components/
-    │   ├── GoogleSignInButton.js   # Reusable Google sign-in button
-    │   ├── LoadingScreen.js        # Polished Hb+ branded loading screen
-    │   └── ErrorBanner.js          # Animated error notification banner
+    │   ├── GoogleSignInButton.js   # Reusable Google OAuth button component
+    │   ├── LoadingScreen.js        # Full-screen branded loading indicator
+    │   └── ErrorBanner.js          # Slide-down animated error notification component
     └── styles/
-        └── theme.js                # Design tokens (colors, typography, spacing, shadows)
+        └── theme.js                # Design tokens, color palette, typography scale, and shadows
 ```
 
 ---
 
-## ⚙️ Setup & Running
+## Installation and Local Setup
 
 ### Prerequisites
-- Node.js ≥ 18
+- Node.js (v18.0.0 or higher recommended)
 - npm or yarn
+- Git
 
-### 1. Install Dependencies
+### 1. Clone the Repository
+```bash
+git clone https://github.com/vanshsinghn1-spec/hbplus-auth.git
+cd hbplus-auth
+```
+
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Start the Development Server
+### 3. Start Development Server
 
-**Web:**
+To run on Web:
 ```bash
 npx expo start --web
 ```
-Or with custom port:
+Or specify a custom port:
 ```bash
 npx expo start --web --port 8081
 ```
 
-**Mobile (Android / iOS):**
+To run on Mobile (requires Android Studio emulator or Xcode simulator):
 ```bash
 npx expo run:android   # Android
 npx expo run:ios       # iOS
 ```
-Or start the bundler and scan the QR code with Expo Go:
-```bash
-npx expo start
-```
+
+Alternatively, run `npx expo start` and scan the terminal QR code with the Expo Go mobile application.
 
 ---
 
-## 🔐 Authentication Flow & Domain Restriction
+## Authentication and Domain Restriction Flow
 
 ```
-┌─────────────────┐       ┌────────────────────┐       ┌────────────────────────┐
-│   Login Screen  │──────▶│   Google OAuth     │──────▶│   Domain Verification  │
-│  "Continue with │       │   Authentication   │       │   Does email end with  │
-│     Google"     │       │   (Access Token)   │       │      @hbplus.fit?      │
-└─────────────────┘       └────────────────────┘       └───────────┬────────────┘
-                                                                   │
-                                                ┌──────────────────┴──────────────────┐
-                                                │                                     │
-                                          [YES / ALLOWED]                       [NO / RESTRICTED]
-                                                │                                     │
-                                                ▼                                     ▼
-                                     ┌─────────────────────┐               ┌─────────────────────┐
-                                     │ Protected Dashboard │               │ Error Banner Shown  │
-                                     │ Access Granted (✓)  │               │ "Access restricted. │
-                                     │ Session Persisted   │               │ Use @hbplus.fit"    │
-                                     └─────────────────────┘               └─────────────────────┘
+┌───────────────────┐       ┌──────────────────────┐       ┌────────────────────────┐
+│   Login Screen    │──────▶│  Google OAuth 2.0    │──────▶│   Domain Verification  │
+│  "Continue with   │       │  Authentication      │       │   Does email end with  │
+│      Google"      │       │  (Access Token)      │       │      @hbplus.fit?      │
+└───────────────────┘       └──────────────────────┘       └───────────┬────────────┘
+                                                                       │
+                                                    ┌──────────────────┴──────────────────┐
+                                                    │                                     │
+                                              [YES / ALLOWED]                       [NO / RESTRICTED]
+                                                    │                                     │
+                                                    ▼                                     ▼
+                                         ┌─────────────────────┐               ┌─────────────────────┐
+                                         │ Protected Dashboard │               │ Error Alert Display │
+                                         │ Access Authorized   │               │ "Access restricted. │
+                                         │ Session Persisted   │               │ Use @hbplus.fit"    │
+                                         └─────────────────────┘               └─────────────────────┘
 ```
 
-The domain validation logic is implemented in [`src/context/AuthContext.js`](file:///c:/Users/admin/Desktop/hb_ass/src/context/AuthContext.js):
+The domain validation check is executed in `src/context/AuthContext.js`:
 
 ```javascript
 const validateDomain = (email) => {
@@ -184,53 +171,135 @@ const validateDomain = (email) => {
 };
 ```
 
----
-
-## 🧪 Testing the Assignment
-
-You can verify the authentication and domain restriction behavior in two ways:
-
-### Method A: One-Click Evaluator Testing (Instant Verification)
-On the Login Screen:
-1. Click **"Try restricted account (@gmail.com)"**:
-   - The app verifies the domain `guest@gmail.com`.
-   - Domain validation fails: the error alert appears:
-     > *"Access restricted. Please login using your official domain email (@hbplus.fit)."*
-   - Access to the dashboard is blocked.
-2. Click **"Quick test official account (@hbplus.fit)"**:
-   - The app verifies the domain `alex@hbplus.fit`.
-   - Domain validation passes: transitions into the full protected Dashboard screen.
-   - Shows verified `@hbplus.fit` domain status badge.
-
-### Method B: Live Google OAuth 2.0 Credentials
-To use your live Google Cloud Console credentials:
-1. Open [`src/config/constants.js`](file:///c:/Users/admin/Desktop/hb_ass/src/config/constants.js).
-2. Replace `WEB_CLIENT_ID`, `ANDROID_CLIENT_ID`, and `IOS_CLIENT_ID` with your Google Cloud credentials.
-3. Click **"Continue with Google"** to authenticate via real Google Identity Services.
+If the domain matches, the user object is stored in AsyncStorage and global state transitions to authenticated. If the domain does not match, state updates to show the restriction message and no protected routes are unlocked.
 
 ---
 
-## 👥 Role-Based Access Control
+## Assignment Evaluation and Testing Modes
 
-The app differentiates access roles:
-- **Administrator** (`admin@hbplus.fit`): Receives the Administrator badge and the Admin Console panel.
-- **Member** (all other `@hbplus.fit` emails): Receives standard team member workspace access.
+To allow immediate verification by evaluators without requiring external Google Cloud configuration:
+
+### 1. One-Click Verification (Recommended)
+- **Restricted Account Test**: Click `"Try restricted account (@gmail.com)"`.
+  - The application verifies `guest@gmail.com`.
+  - Access is rejected and the error banner displays:  
+    `"Access restricted. Please login using your official domain email (@hbplus.fit)."`
+- **Authorized Account Test**: Click `"Quick test official account (@hbplus.fit)"`.
+  - The application authorizes `alex@hbplus.fit`.
+  - Navigates directly into the protected dashboard and confirms verified domain status.
+
+### 2. Live Google OAuth Credential Configuration
+To connect live Google Cloud credentials:
+1. Open `src/config/constants.js`.
+2. Populate `WEB_CLIENT_ID`, `ANDROID_CLIENT_ID`, and `IOS_CLIENT_ID` with valid client IDs.
+3. Use the primary `"Continue with Google"` button to authenticate against Google's live identity servers.
 
 ---
 
-## 🩺 Verification & Quality
+## Role-Based Access Control
 
-Before finalizing, the codebase has been verified against all strict quality guidelines:
-- **Typecheck:** `npx tsc --noEmit` — **0 errors**
-- **Linter:** `npx eslint src/ App.js` — **0 errors, 0 warnings**
-- **Expo Doctor:** `npx expo-doctor` — **21/21 checks passed**
+- **Administrator**: Accounts listed under `ADMIN_EMAILS` (e.g., `admin@hbplus.fit`) are designated with administrator permissions. They receive the Administrator tag in the header and access to the dedicated Admin Console.
+- **Member**: All other verified `@hbplus.fit` accounts receive standard Member status with access to project workflows and team feeds.
 
 ---
 
-## 🌐 Production Deployment
+## Code Quality and Verification
 
-To build a production web bundle:
+All code quality checks have been executed and verified:
+
 ```bash
-npx expo export --platform web
+# Typecheck
+npx tsc --noEmit
+# Result: 0 errors
+
+# Linting
+npx eslint src/ App.js
+# Result: 0 errors, 0 warnings
+
+# Project Health
+npx expo-doctor
+# Result: 21/21 checks passed
 ```
-The output is generated in `dist/` ready to be hosted on Netlify, Vercel, or AWS S3.
+
+---
+
+## Deployment Guide for Netlify
+
+Follow these instructions to deploy the web build of the application to Netlify.
+
+### Method 1: Continuous Deployment via GitHub (Recommended)
+
+1. **Push your code to GitHub**:
+   Ensure all changes are pushed to your repository (`main` branch):
+   ```bash
+   git push origin main
+   ```
+
+2. **Log into Netlify**:
+   - Navigate to [app.netlify.com](https://app.netlify.com) and sign in.
+
+3. **Import Project**:
+   - Click **Add new site** > **Import an existing project**.
+   - Select **GitHub** as your Git provider.
+   - Authorize Netlify and select the repository: `hbplus-auth`.
+
+4. **Configure Build Settings**:
+   - **Branch to deploy**: `main`
+   - **Base directory**: Leave blank (root of repository)
+   - **Build command**:
+     ```bash
+     npx expo export --platform web
+     ```
+   - **Publish directory**:
+     ```
+     dist
+     ```
+
+5. **Single-Page Application (SPA) Routing**:
+   The repository includes a `public/_redirects` file with the rule:
+   ```
+   /*    /index.html   200
+   ```
+   Expo automatically copies files from `public/` into the `dist/` directory during `npx expo export`, ensuring deep routes reload without 404 errors.
+
+6. **Deploy Site**:
+   - Click **Deploy hbplus-auth**.
+   - Netlify will install dependencies, generate the static bundle into `dist`, and provide a production HTTPS URL (e.g., `https://hbplus-auth.netlify.app`).
+
+---
+
+### Method 2: Manual Deployment via Netlify Drop
+
+If you prefer deploying a local build without connecting Git:
+
+1. **Generate the production web bundle**:
+   ```bash
+   npx expo export --platform web
+   ```
+   This generates the optimized, production-ready static files in the `dist/` directory.
+
+2. **Deploy via Browser**:
+   - Open [app.netlify.com/drop](https://app.netlify.com/drop) in your browser.
+   - Drag the generated `dist` folder from your project directory into the designated drop area.
+   - The site deploys instantly with a live production URL.
+
+---
+
+### Method 3: Deployment via Netlify CLI
+
+1. **Install Netlify CLI globally**:
+   ```bash
+   npm install -g netlify-cli
+   ```
+
+2. **Authenticate with Netlify**:
+   ```bash
+   netlify login
+   ```
+
+3. **Export and Deploy**:
+   ```bash
+   npx expo export --platform web
+   netlify deploy --prod --dir=dist
+   ```
+   The CLI outputs the live production URL upon completion.
