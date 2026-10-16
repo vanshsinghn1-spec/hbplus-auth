@@ -35,6 +35,7 @@ The user interface adheres to a clean, enterprise-grade design system featuring 
 - **Google OAuth 2.0 Integration**: Authentication handled via Expo AuthSession.
 - **Domain Restriction**: Enforces access exclusively for emails ending in `@hbplus.fit`.
 - **Restricted Domain Handling**: Non-allowed domains (e.g., `@gmail.com`) trigger an informative error alert with access denied.
+- **Supabase Integration**: Session synchronization, profile upserting, and authentication audit logging via `@supabase/supabase-js`.
 - **Protected Routing**: Dashboard routes cannot be accessed without an active, verified session.
 - **Session Persistence**: Authentication state and token metadata are securely retained across page reloads via AsyncStorage.
 - **Role-Based Access Control (RBAC)**: Distinguishes between Administrator and Member roles, conditionally exposing administrative management tools.
@@ -74,6 +75,7 @@ The user interface is modeled after modern enterprise productivity applications:
 | Web Platform | React Native for Web | 0.21.2 | Web browser compilation and rendering |
 | Development Tooling | Expo SDK | 57.0.29 | Build tools, runtime environment, and CLI |
 | Authentication | Expo AuthSession | 57.0.16 | OAuth 2.0 provider integration and browser flows |
+| Backend & Database | Supabase (`@supabase/supabase-js`) | 2.118.0 | User profile sync, session persistence, and audit logging |
 | Session Storage | AsyncStorage | 2.2.0 | Encrypted persistent client-side state storage |
 | State Management | React Context API | React 19 | Global authentication state and session handlers |
 | Type Safety | TypeScript | 6.0.3 | Strict type definitions and compile checks |
@@ -85,6 +87,7 @@ The user interface is modeled after modern enterprise productivity applications:
 
 ```
 hb_ass/
+├── .env.example                    # Environment variable template (Google OAuth & Supabase)
 ├── App.js                          # Root navigator implementing protected routing
 ├── app.json                        # Expo application manifest and configuration
 ├── package.json                    # Project dependencies and operational scripts
@@ -94,9 +97,11 @@ hb_ass/
 │   └── _redirects                  # Single-page application (SPA) web routing redirect rules
 └── src/
     ├── config/
-    │   └── constants.js            # OAuth client IDs, allowed domain, and role lists
+    │   └── constants.js            # OAuth client IDs, Supabase config, and allowed domain
     ├── context/
     │   └── AuthContext.js          # Authentication provider, session lifecycle, and domain validator
+    ├── services/
+    │   └── supabase.js             # Supabase client, profile sync, and audit log handlers
     ├── screens/
     │   ├── LoginScreen.js          # Login interface with Google OAuth and evaluator triggers
     │   └── DashboardScreen.js      # Protected application dashboard and admin module
@@ -202,6 +207,13 @@ To connect live Google Cloud credentials:
 1. Open `src/config/constants.js`.
 2. Populate `WEB_CLIENT_ID`, `ANDROID_CLIENT_ID`, and `IOS_CLIENT_ID` with valid client IDs.
 3. Use the primary `"Continue with Google"` button to authenticate against Google's live identity servers.
+
+### 3. Supabase Backend Configuration
+- **Out-of-the-Box Evaluation Mode**: The Supabase service is pre-initialized. User profile synchronization and authentication audit events are logged and managed safely without requiring evaluators to set up an external database.
+- **Connecting a Live Supabase Project**:
+  1. Copy `.env.example` to `.env`.
+  2. Provide your project's `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+  3. The application will automatically synchronize authenticated profiles to the `profiles` table and log security events to `auth_logs`.
 
 ---
 

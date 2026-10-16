@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { AUTH_CONFIG, ADMIN_EMAILS, ROLES, STORAGE_KEYS } from '../config/constants';
+import supabase, { syncUserProfileToSupabase, logAuthEventToSupabase, isSupabaseLive } from '../services/supabase';
 
 // Complete auth session for web redirect
 WebBrowser.maybeCompleteAuthSession();
@@ -60,6 +61,7 @@ export const AuthProvider = ({ children }) => {
 
       // Validate domain
       if (!validateDomain(userInfo.email)) {
+        await logAuthEventToSupabase(userInfo.email, 'RESTRICTED_DOMAIN_ATTEMPT', 'Non-hbplus.fit domain');
         setError(AUTH_CONFIG.DOMAIN_ERROR);
         setAuthLoading(false);
         return;
@@ -81,6 +83,10 @@ export const AuthProvider = ({ children }) => {
       // Persist user data
       await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
       await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+
+      // Sync profile & audit log to Supabase
+      await syncUserProfileToSupabase(userData);
+      await logAuthEventToSupabase(userInfo.email, 'SUCCESS_LOGIN');
 
       setUser(userData);
       setError(null);
@@ -153,6 +159,7 @@ export const AuthProvider = ({ children }) => {
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       if (!validateDomain(testEmail)) {
+        await logAuthEventToSupabase(testEmail, 'RESTRICTED_DOMAIN_ATTEMPT', 'Non-hbplus.fit domain');
         setError(AUTH_CONFIG.DOMAIN_ERROR);
         setAuthLoading(false);
         return false;
@@ -179,6 +186,10 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
       await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, userData.accessToken);
 
+      // Sync profile & audit log to Supabase
+      await syncUserProfileToSupabase(userData);
+      await logAuthEventToSupabase(testEmail, 'SUCCESS_LOGIN_DEMO');
+
       setUser(userData);
       setError(null);
       return true;
@@ -195,6 +206,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await AsyncStorage.multiRemove([STORAGE_KEYS.USER_DATA, STORAGE_KEYS.AUTH_TOKEN]);
+      await supabase.auth.signOut().catch(() => {});
       setUser(null);
       setError(null);
     } catch (_err) {
@@ -224,6 +236,8 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         isAuthenticated: !!user,
         request,
+        supabase,
+        isSupabaseLive: isSupabaseLive(),
       }}
     >
       {children}

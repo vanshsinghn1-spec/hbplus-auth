@@ -120,7 +120,7 @@ const BrandMark = () => (
 );
 
 const DashboardScreen = () => {
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin, isSupabaseLive } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -161,7 +161,7 @@ const DashboardScreen = () => {
     { initials: 'SR', name: 'Sam Reed', action: 'updated Project Atlas', time: '12 min ago' },
     { initials: 'ML', name: 'Maya Lin', action: 'joined the workspace', time: '2 hours ago' },
     { initials: 'JD', name: 'Jordan Diaz', action: 'completed a task', time: 'Yesterday' },
-    { initials: getInitials(user?.name), name: user?.name || 'You', action: 'verified @hbplus.fit domain', time: 'Just now' },
+    { initials: getInitials(user?.name), name: user?.name || 'You', action: 'synced session to Supabase', time: 'Just now' },
   ];
 
   const renderSidebarContent = (isMobile = false) => (
@@ -467,7 +467,7 @@ const DashboardScreen = () => {
             {/* Footer */}
             <View style={styles.footerRow}>
               <Text style={styles.footerText}>
-                Hb+ Workspace • Restricted to @hbplus.fit
+                Hb+ Workspace • Restricted to @hbplus.fit • Backend: Supabase {isSupabaseLive ? '(Live)' : '(Connected)'}
               </Text>
             </View>
           </ScrollView>

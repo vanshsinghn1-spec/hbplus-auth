@@ -19,6 +19,12 @@ export const AUTH_CONFIG = {
   NETWORK_ERROR: 'Network error. Please check your connection and try again.',
 };
 
+// Supabase backend configuration
+export const SUPABASE_CONFIG = {
+  URL: process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key',
+};
+
 // Role definitions for role-based access control
 export const ROLES = {
   ADMIN: 'admin',
