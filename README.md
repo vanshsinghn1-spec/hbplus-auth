@@ -4,10 +4,20 @@ A secure cross-platform application developed with React Native (Expo SDK 57) su
 
 The user interface adheres to a clean, enterprise-grade design system featuring responsive sidebar navigation, workspace activity metrics, and dedicated testing modes for evaluator review.
 
+
+---
+
+## Live Demonstration
+
+- **Live Production URL**: [https://monumental-kleicha-242f81.netlify.app/](https://monumental-kleicha-242f81.netlify.app/)
+- **Authorized Domain Demonstration**: Evaluators can click "Quick test official account (@hbplus.fit)" to view immediate authorized entry into the protected Hb+ workspace.
+- **Restricted Domain Demonstration**: Evaluators can click "Try restricted account (@gmail.com)" to view access rejection and the domain alert banner.
+
 ---
 
 ## Table of Contents
 
+- [Live Demonstration](#live-demonstration)
 - [Features](#features)
 - [Design and Architecture](#design-and-architecture)
 - [Technology Stack](#technology-stack)
@@ -17,7 +27,6 @@ The user interface adheres to a clean, enterprise-grade design system featuring 
 - [Assignment Evaluation and Testing Modes](#assignment-evaluation-and-testing-modes)
 - [Role-Based Access Control](#role-based-access-control)
 - [Code Quality and Verification](#code-quality-and-verification)
-- [Deployment Guide for Netlify](#deployment-guide-for-netlify)
 
 ---
 
@@ -82,7 +91,7 @@ hb_ass/
 ├── tsconfig.json                   # Strict TypeScript compiler configuration
 ├── eslint.config.js                # Flat ESLint configuration file
 ├── public/
-│   └── _redirects                  # Netlify single-page application redirect rules
+│   └── _redirects                  # Single-page application (SPA) web routing redirect rules
 └── src/
     ├── config/
     │   └── constants.js            # OAuth client IDs, allowed domain, and role lists
@@ -220,86 +229,3 @@ npx eslint src/ App.js
 npx expo-doctor
 # Result: 21/21 checks passed
 ```
-
----
-
-## Deployment Guide for Netlify
-
-Follow these instructions to deploy the web build of the application to Netlify.
-
-### Method 1: Continuous Deployment via GitHub (Recommended)
-
-1. **Push your code to GitHub**:
-   Ensure all changes are pushed to your repository (`main` branch):
-   ```bash
-   git push origin main
-   ```
-
-2. **Log into Netlify**:
-   - Navigate to [app.netlify.com](https://app.netlify.com) and sign in.
-
-3. **Import Project**:
-   - Click **Add new site** > **Import an existing project**.
-   - Select **GitHub** as your Git provider.
-   - Authorize Netlify and select the repository: `hbplus-auth`.
-
-4. **Configure Build Settings**:
-   - **Branch to deploy**: `main`
-   - **Base directory**: Leave blank (root of repository)
-   - **Build command**:
-     ```bash
-     npx expo export --platform web
-     ```
-   - **Publish directory**:
-     ```
-     dist
-     ```
-
-5. **Single-Page Application (SPA) Routing**:
-   The repository includes a `public/_redirects` file with the rule:
-   ```
-   /*    /index.html   200
-   ```
-   Expo automatically copies files from `public/` into the `dist/` directory during `npx expo export`, ensuring deep routes reload without 404 errors.
-
-6. **Deploy Site**:
-   - Click **Deploy hbplus-auth**.
-   - Netlify will install dependencies, generate the static bundle into `dist`, and provide a production HTTPS URL (e.g., `https://hbplus-auth.netlify.app`).
-
----
-
-### Method 2: Manual Deployment via Netlify Drop
-
-If you prefer deploying a local build without connecting Git:
-
-1. **Generate the production web bundle**:
-   ```bash
-   npx expo export --platform web
-   ```
-   This generates the optimized, production-ready static files in the `dist/` directory.
-
-2. **Deploy via Browser**:
-   - Open [app.netlify.com/drop](https://app.netlify.com/drop) in your browser.
-   - Drag the generated `dist` folder from your project directory into the designated drop area.
-   - The site deploys instantly with a live production URL.
-
----
-
-### Method 3: Deployment via Netlify CLI
-
-1. **Install Netlify CLI globally**:
-   ```bash
-   npm install -g netlify-cli
-   ```
-
-2. **Authenticate with Netlify**:
-   ```bash
-   netlify login
-   ```
-
-3. **Export and Deploy**:
-   ```bash
-   npx expo export --platform web
-   netlify deploy --prod --dir=dist
-   ```
-   The CLI outputs the live production URL upon completion.
